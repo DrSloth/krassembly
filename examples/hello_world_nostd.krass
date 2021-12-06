@@ -1,0 +1,41 @@
+; Set the entry point as main, you could call the jump point entry to avoid this line
+global entry, main
+
+; TODO there has to be a documented way to create labels local to only a macro.
+
+main:
+    call example_write, "Hello, World!"
+    mov rax, 60
+    mov rbx, 0
+    syscall
+
+
+example_write(text): ; This is what `WRITE text` extends to
+    call example_len, text ; Write the length of text into rcx
+    ; we store the len first as we know that LEN/example_len clobbers rbx
+    mov rax, 4
+    mov rbx, 1 ; 1 is the output file descriptor, 1 by default it could also be given as param
+    mov rdx, text 
+    syscall
+
+; NOTE that null terminators are not strictly needed but are an easy way to store the length
+;       as LEN can be used. Maybe there will be the capability to define structs which 
+;       would make that a whole lot easier, maybe there would be a macro which checks
+;       if a given operand is an instance of a struct/a pointer to a struct
+
+; Here we don't use parameter syntax but what it actually extends to.
+example_len: ; This is what `LEN text, rcx` extends to
+    ; As text should be a pointer to a string we can use pointer arithmetic
+    ; The DEFINE macro is not part of std but here we also don't use it
+    mov rbx, [rsp+1] ; store text to rbx
+    xor rcx, rcx ; set rcx to 0
+    ; iterate until we are at a '\0'
+    jmp loop_start
+    increment: 
+        inc rcx
+        inc rbx
+    loop_start: ; Normally one should use the LOCAL macro to make a label local to the example_len
+        test [rbx], 0 ; Check if rbx points to a '\0' character
+        jne increment
+        
+

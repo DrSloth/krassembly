@@ -1,0 +1,7 @@
+; Semicolon is used to make comments
+
+include "std/io"
+
+entry:
+    WRITE "Hello, World\0" ; WRITE is a macro
+    EXIT 0; end the execution and exit the program
